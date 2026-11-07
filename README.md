@@ -23,15 +23,15 @@ JDK 17+ and Maven 3.8+ (tests), Python 3 with `matplotlib` (plots only).
 mvn test
 ```
 
-## Run the experiment (about 1.5–2 minutes, needs ~1.5 GB heap for n = 4000 tables)
+## Run the experiment (about 1–2 minutes)
 ```
-mvn -q compile exec:java -Dexec.args="results/results.csv" -DargLine="-Xmx3g"
-# or without exec plugin:
-mvn -q compile && java -Xmx3g -cp target/classes daa.exp.Experiment results/results.csv
-python3 scripts/plot.py        # draws the plots and prints a summary
+mvn -q compile exec:java          # writes results/results.csv (path is set in pom.xml)
+# or without the exec plugin:
+mvn -q compile && java -cp target/classes daa.exp.Experiment results/results.csv
+python3 scripts/plot.py           # draws results/plots/*.png and prints a summary
 ```
-The generator uses the fixed seed `2026`, so the inputs and all counters are identical on every run;
-only the times change a little from machine to machine.
+The generator uses the fixed seed `2026` and the recursion caps are fixed, so the rows and all counters are
+identical on every run; only `time_ms` changes a little from machine to machine.
 
 ## results.csv columns
 `algorithm, family, input, n, m, rep, time_ms, work, mem_cells, comparisons, lps_comparisons, result`
