@@ -20,12 +20,15 @@ public final class Experiment {
 
     static final int REPS = 5;
     static final int REPS_RECURSIVE = 3;
-    static final double RECURSION_LIMIT_MS = 8000;
+    /** From this n on a recursive run takes seconds, so it is repeated only once. */
+    static final int LONG_RUN_FROM_N = 13;
 
     static final int[] REC_SIZES = {3, 6, 8, 10, 11, 12, 13, 14};
     static final int[] DP_SIZES = {250, 500, 1000, 2000, 4000};
     static final int[] TWO_ROW_EXTRA = {8000, 16000};
     static final int[] SEARCH_SIZES = {10_000, 20_000, 40_000, 80_000, 160_000};
+    /** Largest n for the recursion: found in a trial run (one run <= ~8 s on 'disjoint', ~25 s on 'random' at 14). */
+    static int recursionMaxN(String type) { return type.equals("disjoint") ? 13 : 14; }
     static final String[] EDIT_INPUTS = {"random", "identical", "disjoint"};
     static final String[] SEARCH_INPUTS = {"random", "best_naive", "worst_naive"};
 
@@ -49,19 +52,20 @@ public final class Experiment {
         EditDistance two = new TwoRowEditDistance();
 
         // Recursive (small n only), checked against the table version.
+        // The cap per input type is FIXED (not time-based), so the same command always gives the same rows.
         for (String type : EDIT_INPUTS) {
             for (int n : REC_SIZES) {
+                if (n > recursionMaxN(type)) break;
                 String[] p = Gen.editPair(type, n);
                 int expected = tab.distance(p[0], p[1]);
+                int reps = n >= LONG_RUN_FROM_N ? 1 : REPS_RECURSIVE;   // runs of many seconds are done once
                 double worst = 0;
-                for (int rep = 1; rep <= REPS_RECURSIVE; rep++) {
+                for (int rep = 1; rep <= reps; rep++) {
                     double ms = timeEdit(rec, p, expected);
                     worst = Math.max(worst, ms);
                     editRow(w, rec, type, n, rep, ms, expected);
-                    if (ms > RECURSION_LIMIT_MS) break;      // do not repeat a run that is already too long
                 }
                 System.out.printf(Locale.ROOT, "%s %s n=%d calls=%d worst=%.1f ms%n", rec.name(), type, n, rec.work(), worst);
-                if (worst > RECURSION_LIMIT_MS) break;       // next size would be ~6x slower: stop here
             }
         }
 
