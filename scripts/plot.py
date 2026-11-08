@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-"""Reads results/results.csv and draws the plots in results/plots/. Also prints a summary used in REPORT.md."""
 import csv, math, os, statistics, sys
 from collections import defaultdict
 import matplotlib
